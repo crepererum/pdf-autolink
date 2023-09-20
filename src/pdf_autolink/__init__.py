@@ -85,7 +85,6 @@ def mark_chapters(doc: fitz.Document, index: TextIndex) -> None:
 
 
 def mark_page_tables(doc: fitz.Document, index: TextIndex) -> None:
-    n_pages = len(doc)
     pages = defaultdict(lambda: defaultdict(lambda: []))
 
     # find potential links
