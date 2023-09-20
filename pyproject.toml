@@ -1,0 +1,21 @@
+[project]
+name = "pdf-autolink"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Marco Neumann", email = "marco@crepererum.net"},
+]
+dependencies = [
+    "pypdf>=3.16.1",
+    "cryptography>=41.0.3",
+]
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "MIT"}
+
+[project.scripts]
+pdf_autolink = "pdf_autolink:main"
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
