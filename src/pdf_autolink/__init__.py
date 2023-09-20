@@ -45,7 +45,7 @@ class TextIndex:
     text: str
     positions: list[TextPosition]
 
-    def find_indices(self, start: int, end: int) -> (int, int):
+    def find_indices(self, start: int, end: int) -> tuple[int, int]:
         idx_start = bisect(self.positions, start, key=lambda p: p.txt_offset) - 1
         idx_end = bisect(
             self.positions, end - 1, lo=idx_start, key=lambda p: p.txt_offset
@@ -85,7 +85,9 @@ def mark_chapters(doc: fitz.Document, index: TextIndex) -> None:
 
 
 def mark_page_tables(doc: fitz.Document, index: TextIndex) -> None:
-    pages = defaultdict(lambda: defaultdict(lambda: []))
+    pages: defaultdict[int, defaultdict[int, list[tuple[int, int]]]] = defaultdict(
+        lambda: defaultdict(lambda: [])
+    )
 
     # find potential links
     for match in re.finditer(r"([a-z()]+\s+)*[a-z()]{2,}\s+([0-9]+)", index.text, re.I):
@@ -107,7 +109,7 @@ def mark_page_tables(doc: fitz.Document, index: TextIndex) -> None:
         pages[page][page_number].append((start, end))
 
     # organize link source pages into runs
-    runs = []
+    runs: list[list[int]] = []
     run = None
     for page in sorted(pages.keys()):
         # filter out pages w/ not enough of links
@@ -154,7 +156,7 @@ def create_links(
     end: int,
     target_page: int,
     target_pos: fitz.Point | None = None,
-):
+) -> None:
     assert end > start
 
     idx_start, idx_end = index.find_indices(start, end)
@@ -194,7 +196,7 @@ def create_link(
     source_rect: fitz.Rect,
     target_page: int,
     target_pos: fitz.Point | None,
-):
+) -> None:
     if target_pos is None:
         target_pos = fitz.Point(0.0, 0.0)
 

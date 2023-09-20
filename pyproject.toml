@@ -20,8 +20,20 @@ pdf_autolink = "pdf_autolink:main"
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
+[tool.mypy]
+python_version = "3.11"
+strict = true
+
+[[tool.mypy.overrides]]
+module = "fitz.*"
+ignore_missing_imports = true
+
 [tool.pdm.dev-dependencies]
 test = [
     "black>=23.9.1",
     "ruff>=0.0.290",
+    "mypy>=1.5.1",
 ]
+
+[tool.pdm.scripts]
+lint = {composite = ["black .", "mypy .", "ruff check ."]}
