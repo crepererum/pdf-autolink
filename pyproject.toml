@@ -30,10 +30,9 @@ ignore_missing_imports = true
 
 [tool.pdm.dev-dependencies]
 test = [
-    "black>=23.9.1",
     "ruff>=0.0.290",
     "mypy>=1.5.1",
 ]
 
 [tool.pdm.scripts]
-lint = {composite = ["black .", "mypy .", "ruff check ."]}
+lint = {composite = ["mypy .", "ruff check .", "ruff format ."]}
