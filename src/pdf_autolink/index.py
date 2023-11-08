@@ -4,6 +4,9 @@ from bisect import bisect
 from dataclasses import dataclass
 
 import fitz
+import structlog
+
+__logger__ = structlog.get_logger()
 
 
 @dataclass
@@ -22,7 +25,7 @@ class TextIndex:
         text = ""
         positions = []
         for i, page in enumerate(doc):
-            print(f"page: {i+1}/{len(doc)}")
+            __logger__.info("index page", page=i + 1, pages=len(doc))
             for word in page.get_text("words"):
                 (x0, y0, x1, y1, word, block_no, line_no, word_no) = word
                 positions.append(TextPosition(i, fitz.Rect(x0, y0, x1, y1), len(text)))

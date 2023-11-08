@@ -4,9 +4,12 @@ from collections import defaultdict
 import re
 
 import fitz
+import structlog
 
 from ..index import TextIndex
 from ..link import create_links
+
+__logger__ = structlog.get_logger()
 
 
 def mark_page_tables(doc: fitz.Document, index: TextIndex) -> None:
@@ -66,7 +69,8 @@ def mark_page_tables(doc: fitz.Document, index: TextIndex) -> None:
     # emit two top-most runs
     for run in runs[:2]:
         for page in run:
-            print(f"found page table at page {page+1}")
+            __logger__.info("found page table", page=page + 1)
+
             page_entries = pages[page]
             for page_number in sorted(page_entries.keys()):
                 targets = page_entries[page_number]

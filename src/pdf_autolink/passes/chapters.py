@@ -3,9 +3,12 @@ from __future__ import annotations
 import re
 
 import fitz
+import structlog
 
 from ..index import TextIndex
 from ..link import create_links
+
+__logger__ = structlog.get_logger()
 
 
 def mark_chapters(doc: fitz.Document, index: TextIndex) -> None:
@@ -19,6 +22,14 @@ def mark_chapters(doc: fitz.Document, index: TextIndex) -> None:
     for match in re.finditer(r"chapter\s+([0-9]+)", index.text, re.I):
         # find target page
         chapter_number = int(match.group(1))
+
+        if chapter_number <= 0 or chapter_number > len(chapter_targets):
+            __logger__.warn(
+                "unknown chapter",
+                chapter=chapter_number,
+                n_chapters=len(chapter_targets),
+            )
+            continue
         (page_number, pos) = chapter_targets[chapter_number - 1]
 
         # build marker rects

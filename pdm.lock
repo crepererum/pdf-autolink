@@ -3,10 +3,9 @@
 
 [metadata]
 groups = ["default", "test"]
-cross_platform = true
-static_urls = false
-lock_version = "4.3"
-content_hash = "sha256:b8ed41fd86dca45ac0f3caa9034d5ef4c6924ee01385ca90732a3842c9b8a809"
+strategy = ["cross_platform"]
+lock_version = "4.4"
+content_hash = "sha256:7231310f22ffbf067123f20563ecb144ef6c616cc14b323ca25d00bf27a5b63a"
 
 [[package]]
 name = "click"
@@ -123,6 +122,16 @@ files = [
     {file = "ruff-0.1.4-py3-none-win_amd64.whl", hash = "sha256:1dfd6bf8f6ad0a4ac99333f437e0ec168989adc5d837ecd38ddb2cc4a2e3db8a"},
     {file = "ruff-0.1.4-py3-none-win_arm64.whl", hash = "sha256:d98ae9ebf56444e18a3e3652b3383204748f73e247dea6caaf8b52d37e6b32da"},
     {file = "ruff-0.1.4.tar.gz", hash = "sha256:21520ecca4cc555162068d87c747b8f95e1e95f8ecfcbbe59e8dd00710586315"},
+]
+
+[[package]]
+name = "structlog"
+version = "23.2.0"
+requires_python = ">=3.8"
+summary = "Structured Logging for Python"
+files = [
+    {file = "structlog-23.2.0-py3-none-any.whl", hash = "sha256:16a167e87b9fa7fae9a972d5d12805ef90e04857a93eba479d4be3801a6a1482"},
+    {file = "structlog-23.2.0.tar.gz", hash = "sha256:334666b94707f89dbc4c81a22a8ccd34449f0201d5b1ee097a030b577fa8c858"},
 ]
 
 [[package]]
