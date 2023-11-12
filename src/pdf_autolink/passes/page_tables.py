@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 import re
-from typing import Mapping
+from typing import Mapping, TypeAlias
 
 import fitz
 import structlog
@@ -15,10 +15,30 @@ from ..link import create_links
 
 __logger__ = structlog.get_logger()
 
+#: Maps "source page" -> "per source page info".
+#:
+#: Every source page is represented by a map of "target page" to "list of text index ranges".
+#:
+#: Hence the final type is:
+#: source_page -> (target_page -> [range])
+PAGE_MAPPING: TypeAlias = Mapping[int, Mapping[int, list[tuple[int, int]]]]
+
 
 class Config(BaseModel):
+    #: Minimum number of non-unique outgoing links to consider a page as a member of a page table.
     min_links_per_page: int = 10
+
+    #: How many page tables should be marked?
+    #:
+    #: Page tables are sorted by number of unique outgoing links in descending order.
     top_most_runs: int = 2
+
+    #: Regular expression for a page link.
+    #:
+    #: Must contain the named capture group `page_number` that refers to the page number.
+    #:
+    #: The regex is applied case-insensitive.
+    page_regex: str = r"([a-z()]+\s+)*[a-z()]{2,}\s+(?P<page_number>[0-9]+)"
 
 
 class PageTablesPass(Pass):
@@ -30,7 +50,7 @@ class PageTablesPass(Pass):
         self.run_typed(doc, index, config_typed)
 
     def run_typed(self, doc: fitz.Document, index: TextIndex, config: Config) -> None:
-        pages = self._find_pages(doc, index)
+        pages = self._find_pages(doc, index, config)
 
         # filter out pages w/ not enough of links
         pages = {
@@ -39,20 +59,7 @@ class PageTablesPass(Pass):
             if len(links) >= config.min_links_per_page
         }
 
-        # organize link source pages into runs
-        runs: list[list[int]] = []
-        run = None
-        for page in sorted(pages.keys()):
-            # add page to run
-            if run is None:
-                run = [page]
-            elif run[-1] + 1 == page:
-                run.append(page)
-            else:
-                runs.append(run)
-                run = [page]
-        if run is not None:
-            runs.append(run)
+        runs = self._detect_runs(pages)
 
         # sort runs by number of outgoing unique links
         runs = sorted(
@@ -67,30 +74,38 @@ class PageTablesPass(Pass):
             reverse=True,
         )
 
-        # emit top-most runs
-        for run in runs[: config.top_most_runs]:
-            for page in run:
-                __logger__.info("found page table", page=page + 1)
+        __logger__.info("detected page tables", num_page_tables=len(runs))
 
+        # emit top-most runs
+        marked = 0
+        for run in runs[: config.top_most_runs]:
+            __logger__.info("mark page table", pages=[p + 1 for p in run])
+
+            for page in run:
                 page_entries = pages[page]
                 for page_number in sorted(page_entries.keys()):
                     targets = page_entries[page_number]
                     for start, end in targets:
                         create_links(doc, index, start, end, page_number)
+                        marked += 1
+
+        __logger__.info("marked links in page tables", num_links=marked)
 
     def _find_pages(
-        self, doc: fitz.Document, index: TextIndex
-    ) -> Mapping[int, Mapping[int, list[tuple[int, int]]]]:
+        self, doc: fitz.Document, index: TextIndex, config: Config
+    ) -> PAGE_MAPPING:
+        """
+        Find page references.
+        """
+
         pages: defaultdict[int, defaultdict[int, list[tuple[int, int]]]] = defaultdict(
             lambda: defaultdict(lambda: [])
         )
 
         # find potential links
-        for match in re.finditer(
-            r"([a-z()]+\s+)*[a-z()]{2,}\s+([0-9]+)", index.text, re.I
-        ):
+        for match in re.finditer(config.page_regex, index.text, re.I):
             # find target page
-            page_label = match.group(2)
+            page_label = match.group("page_number")
             page_numbers = doc.get_page_numbers(page_label)
             if len(page_numbers) != 1:
                 continue
@@ -107,3 +122,24 @@ class PageTablesPass(Pass):
             pages[page][page_number].append((start, end))
 
         return pages
+
+    def _detect_runs(self, pages: PAGE_MAPPING) -> list[list[int]]:
+        """
+        Organize link source pages into runs.
+        """
+
+        runs: list[list[int]] = []
+        run = None
+        for page in sorted(pages.keys()):
+            # add page to run
+            if run is None:
+                run = [page]
+            elif run[-1] + 1 == page:
+                run.append(page)
+            else:
+                runs.append(run)
+                run = [page]
+        if run is not None:
+            runs.append(run)
+
+        return runs

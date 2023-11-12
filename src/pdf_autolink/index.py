@@ -25,7 +25,7 @@ class TextIndex:
         text = ""
         positions = []
         for i, page in enumerate(doc):
-            __logger__.info("index page", page=i + 1, pages=len(doc))
+            __logger__.debug("index page", page=i + 1, pages=len(doc))
             for word in page.get_text("words"):
                 (x0, y0, x1, y1, word, block_no, line_no, word_no) = word
                 positions.append(TextPosition(i, fitz.Rect(x0, y0, x1, y1), len(text)))

@@ -15,7 +15,12 @@ __logger__ = structlog.get_logger()
 
 
 class Config(BaseModel):
-    pass
+    #: Regular expression for a page link.
+    #:
+    #: Must contain the named capture group `page_number` that refers to the page number.
+    #:
+    #: The regex is applied case-insensitive.
+    page_regex: str = r"page\s+(?P<page_number>[0-9]+)"
 
 
 class PagesPass(Pass):
@@ -27,9 +32,11 @@ class PagesPass(Pass):
         self.run_typed(doc, index, config_typed)
 
     def run_typed(self, doc: fitz.Document, index: TextIndex, config: Config) -> None:
-        for match in re.finditer(r"page\s+([0-9]+)", index.text, re.I):
+        marked = 0
+
+        for match in re.finditer(config.page_regex, index.text, re.I):
             # find target page
-            page_label = match.group(1)
+            page_label = match.group("page_number")
 
             page_numbers = doc.get_page_numbers(page_label)
             if len(page_numbers) == 0:
@@ -47,3 +54,6 @@ class PagesPass(Pass):
 
             # build marker rects
             create_links(doc, index, match.start(), match.end(), page_number)
+            marked += 1
+
+        __logger__.info("marked page links", num_links=marked)

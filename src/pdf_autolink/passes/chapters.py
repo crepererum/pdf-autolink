@@ -15,7 +15,12 @@ __logger__ = structlog.get_logger()
 
 
 class Config(BaseModel):
-    pass
+    #: Regular expression for a chapter link.
+    #:
+    #: Must contain the named capture group `chapter_number` that refers to the chapter number.
+    #:
+    #: The regex is applied case-insensitive.
+    chapter_regex: str = r"chapter\s+(?P<chapter_number>[0-9]+)"
 
 
 class ChaptersPass(Pass):
@@ -34,9 +39,10 @@ class ChaptersPass(Pass):
             if lvl == 1
         ]
 
-        for match in re.finditer(r"chapter\s+([0-9]+)", index.text, re.I):
+        marked = 0
+        for match in re.finditer(config.chapter_regex, index.text, re.I):
             # find target page
-            chapter_number = int(match.group(1))
+            chapter_number = int(match.group("chapter_number"))
 
             if chapter_number <= 0 or chapter_number > len(chapter_targets):
                 __logger__.warn(
@@ -49,3 +55,7 @@ class ChaptersPass(Pass):
 
             # build marker rects
             create_links(doc, index, match.start(), match.end(), page_number, pos)
+
+            marked += 1
+
+        __logger__.info("marked chapters", num_links=marked)
