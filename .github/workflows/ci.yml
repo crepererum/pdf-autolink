@@ -1,0 +1,27 @@
+---
+name: CI
+
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - "main"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v3
+          python-version: 3.11
+      - name: Install dependencies
+        run: |
+          pdm install
+      - name: Lint
+        run: |
+          pdm run lint
+
