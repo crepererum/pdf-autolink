@@ -54,4 +54,6 @@ test = [
 ]
 
 [tool.pdm.scripts]
-lint = {composite = ["mypy .", "ruff check .", "ruff format ."]}
+fmt = "ruff format ."
+lint = {composite = ["mypy .", "ruff check .", "ruff format --check ."]}
+prepare = {composite = ["fmt", "lint"]}
