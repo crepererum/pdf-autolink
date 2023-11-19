@@ -9,8 +9,16 @@ from ..index import TextIndex
 
 
 class Pass(Protocol):
-    def name(self) -> str:
+    @classmethod
+    def name(cls) -> str:
         ...
 
-    def run(self, doc: fitz.Document, index: TextIndex, config: JSON_DICT) -> None:
+    def __init__(self, config: JSON_DICT) -> None:
+        ...
+
+    def run(self, doc: fitz.Document, index: TextIndex) -> None:
+        ...
+
+    @property
+    def order(self) -> int:
         ...

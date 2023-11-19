@@ -15,6 +15,11 @@ __logger__ = structlog.get_logger()
 
 
 class Config(BaseModel):
+    #: Pass order.
+    #:
+    #: Lower order passes run first.
+    order: int = 10
+
     #: Regular expression for a page link.
     #:
     #: Must contain the named capture group `page_number` that refers to the page number.
@@ -24,17 +29,17 @@ class Config(BaseModel):
 
 
 class PagesPass(Pass):
-    def name(self) -> str:
+    @classmethod
+    def name(cls) -> str:
         return "pages"
 
-    def run(self, doc: fitz.Document, index: TextIndex, config: JSON_DICT) -> None:
-        config_typed = Config.parse_obj(config)
-        self.run_typed(doc, index, config_typed)
+    def __init__(self, config: JSON_DICT) -> None:
+        self.config = Config.parse_obj(config)
 
-    def run_typed(self, doc: fitz.Document, index: TextIndex, config: Config) -> None:
+    def run(self, doc: fitz.Document, index: TextIndex) -> None:
         marked = 0
 
-        for match in re.finditer(config.page_regex, index.text, re.I):
+        for match in re.finditer(self.config.page_regex, index.text, re.I):
             # find target page
             page_label = match.group("page_number")
 
@@ -57,3 +62,7 @@ class PagesPass(Pass):
             marked += 1
 
         __logger__.info("marked page links", num_links=marked)
+
+    @property
+    def order(self) -> int:
+        return self.config.order

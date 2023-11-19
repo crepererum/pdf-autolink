@@ -25,6 +25,11 @@ PAGE_MAPPING: TypeAlias = Mapping[int, Mapping[int, list[tuple[int, int]]]]
 
 
 class Config(BaseModel):
+    #: Pass order.
+    #:
+    #: Lower order passes run first.
+    order: int = 10
+
     #: Minimum number of non-unique outgoing links to consider a page as a member of a page table.
     min_links_per_page: int = 10
 
@@ -42,21 +47,21 @@ class Config(BaseModel):
 
 
 class PageTablesPass(Pass):
-    def name(self) -> str:
+    @classmethod
+    def name(cls) -> str:
         return "page_tables"
 
-    def run(self, doc: fitz.Document, index: TextIndex, config: JSON_DICT) -> None:
-        config_typed = Config.parse_obj(config)
-        self.run_typed(doc, index, config_typed)
+    def __init__(self, config: JSON_DICT) -> None:
+        self.config = Config.parse_obj(config)
 
-    def run_typed(self, doc: fitz.Document, index: TextIndex, config: Config) -> None:
-        pages = self._find_pages(doc, index, config)
+    def run(self, doc: fitz.Document, index: TextIndex) -> None:
+        pages = self._find_pages(doc, index)
 
         # filter out pages w/ not enough of links
         pages = {
             page: links
             for page, links in pages.items()
-            if len(links) >= config.min_links_per_page
+            if len(links) >= self.config.min_links_per_page
         }
 
         runs = self._detect_runs(pages)
@@ -78,7 +83,7 @@ class PageTablesPass(Pass):
 
         # emit top-most runs
         marked = 0
-        for run in runs[: config.top_most_runs]:
+        for run in runs[: self.config.top_most_runs]:
             __logger__.info("mark page table", pages=[p + 1 for p in run])
 
             for page in run:
@@ -92,7 +97,9 @@ class PageTablesPass(Pass):
         __logger__.info("marked links in page tables", num_links=marked)
 
     def _find_pages(
-        self, doc: fitz.Document, index: TextIndex, config: Config
+        self,
+        doc: fitz.Document,
+        index: TextIndex,
     ) -> PAGE_MAPPING:
         """
         Find page references.
@@ -103,7 +110,7 @@ class PageTablesPass(Pass):
         )
 
         # find potential links
-        for match in re.finditer(config.page_regex, index.text, re.I):
+        for match in re.finditer(self.config.page_regex, index.text, re.I):
             # find target page
             page_label = match.group("page_number")
             page_numbers = doc.get_page_numbers(page_label)
@@ -143,3 +150,7 @@ class PageTablesPass(Pass):
             runs.append(run)
 
         return runs
+
+    @property
+    def order(self) -> int:
+        return self.config.order

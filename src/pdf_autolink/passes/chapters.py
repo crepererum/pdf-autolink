@@ -15,6 +15,11 @@ __logger__ = structlog.get_logger()
 
 
 class Config(BaseModel):
+    #: Pass order.
+    #:
+    #: Lower order passes run first.
+    order: int = 10
+
     #: Regular expression for a chapter link.
     #:
     #: Must contain the named capture group `chapter_number` that refers to the chapter number.
@@ -24,14 +29,14 @@ class Config(BaseModel):
 
 
 class ChaptersPass(Pass):
-    def name(self) -> str:
+    @classmethod
+    def name(cls) -> str:
         return "chapters"
 
-    def run(self, doc: fitz.Document, index: TextIndex, config: JSON_DICT) -> None:
-        config_typed = Config.parse_obj(config)
-        self.run_typed(doc, index, config_typed)
+    def __init__(self, config: JSON_DICT) -> None:
+        self.config = Config.parse_obj(config)
 
-    def run_typed(self, doc: fitz.Document, index: TextIndex, config: Config) -> None:
+    def run(self, doc: fitz.Document, index: TextIndex) -> None:
         # page for every top-level chapter
         chapter_targets = [
             (dst["page"], dst["to"])
@@ -40,7 +45,7 @@ class ChaptersPass(Pass):
         ]
 
         marked = 0
-        for match in re.finditer(config.chapter_regex, index.text, re.I):
+        for match in re.finditer(self.config.chapter_regex, index.text, re.I):
             # find target page
             chapter_number = int(match.group("chapter_number"))
 
@@ -59,3 +64,7 @@ class ChaptersPass(Pass):
             marked += 1
 
         __logger__.info("marked chapters", num_links=marked)
+
+    @property
+    def order(self) -> int:
+        return self.config.order

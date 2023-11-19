@@ -17,25 +17,32 @@ __logger__ = structlog.get_logger()
 def run_all(
     doc: fitz.Document, index: TextIndex, pass_cfg: dict[str, JSON_DICT] | None
 ) -> None:
-    passes = _setup_passes()
+    pass_types = _setup_pass_types()
 
     if pass_cfg is None:
-        pass_cfg = {name: {} for name in passes.keys()}
+        pass_cfg = {name: {} for name in pass_types.keys()}
 
+    passes = []
     for name, cfg in pass_cfg.items():
-        __logger__.info("run pass", pass_name=name)
-        passes[name].run(doc, index, cfg or {})
+        __logger__.info("configure pass", pass_name=name)
+        passes.append(pass_types[name](cfg))
+
+    passes = sorted(passes, key=lambda p: (p.order, p.name()))
+
+    for p in passes:
+        __logger__.info("run pass", pass_name=p.name())
+        p.run(doc, index)
 
 
-def _setup_passes() -> dict[str, Pass]:
-    passes: dict[str, Pass] = {}
+def _setup_pass_types() -> dict[str, type[Pass]]:
+    passes: dict[str, type[Pass]] = {}
 
-    _add_pass(passes, ChaptersPass())
-    _add_pass(passes, PagesPass())
-    _add_pass(passes, PageTablesPass())
+    _add_pass_type(passes, ChaptersPass)
+    _add_pass_type(passes, PagesPass)
+    _add_pass_type(passes, PageTablesPass)
 
     return passes
 
 
-def _add_pass(passes: dict[str, Pass], p: Pass) -> None:
+def _add_pass_type(passes: dict[str, type[Pass]], p: type[Pass]) -> None:
     passes[p.name()] = p
