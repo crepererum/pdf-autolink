@@ -36,7 +36,17 @@ def _run_inner(file_in: str, file_out: str, config_file: str) -> None:
 
     run_all(doc, idx, config.passes)
 
-    doc.save(file_out)
+    doc.save(
+        file_out,
+        # try to get the "same" output by running GC:
+        #
+        # 1. remove unused (unreferenced) objects
+        # 2. compact the xref table
+        #
+        # Note that the outputs are still slightly different due to random IDs, see
+        # <https://github.com/pymupdf/PyMuPDF/discussions/1040>.
+        garbage=2,
+    )
 
 
 def main() -> None:
