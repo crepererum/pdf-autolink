@@ -31,7 +31,7 @@ def create_links(
                 or (pos.page_pos.y1 < marker_rect.y0)
             ):
                 # not the same rect
-                create_link(doc, marker_page, marker_rect, target_page, target_pos)
+                _create_link(doc, marker_page, marker_rect, target_page, target_pos)
                 marker_page = pos.page
                 marker_rect = pos.page_pos
 
@@ -43,10 +43,10 @@ def create_links(
         )
 
     assert marker_page is not None
-    create_link(doc, marker_page, marker_rect, target_page, target_pos)
+    _create_link(doc, marker_page, marker_rect, target_page, target_pos)
 
 
-def create_link(
+def _create_link(
     doc: fitz.Document,
     source_page: int,
     source_rect: fitz.Rect,

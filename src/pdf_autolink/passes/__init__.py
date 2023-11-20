@@ -4,6 +4,7 @@ import fitz
 import structlog
 
 from .chapters import ChaptersPass
+from .clear_links import ClearLinksPass
 from .interface import Pass
 from .pages import PagesPass
 from .page_tables import PageTablesPass
@@ -38,6 +39,7 @@ def _setup_pass_types() -> dict[str, type[Pass]]:
     passes: dict[str, type[Pass]] = {}
 
     _add_pass_type(passes, ChaptersPass)
+    _add_pass_type(passes, ClearLinksPass)
     _add_pass_type(passes, PagesPass)
     _add_pass_type(passes, PageTablesPass)
 
