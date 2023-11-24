@@ -21,12 +21,16 @@ def run_all(
     pass_types = _setup_pass_types()
 
     if pass_cfg is None:
-        pass_cfg = {name: {} for name in pass_types.keys()}
+        pass_cfg = {}
 
     passes = []
-    for name, cfg in pass_cfg.items():
+    for name, pass_type in pass_types.items():
+        cfg = pass_cfg.get(name, {})
+        if cfg is None:
+            continue
+
         __logger__.info("configure pass", pass_name=name)
-        passes.append(pass_types[name](cfg))
+        passes.append(pass_type(cfg))
 
     passes = sorted(passes, key=lambda p: (p.order, p.name()))
 
