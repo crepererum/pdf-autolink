@@ -22,3 +22,7 @@ class Pass(Protocol):
     @property
     def order(self) -> int:
         ...
+
+    @property
+    def enabled(self) -> bool:
+        ...

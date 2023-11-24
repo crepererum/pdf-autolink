@@ -25,16 +25,16 @@ def run_all(
 
     passes = []
     for name, pass_type in pass_types.items():
-        cfg = pass_cfg.get(name, {})
-        if cfg is None:
-            continue
-
+        cfg = pass_cfg.get(name) or {}
         __logger__.info("configure pass", pass_name=name)
         passes.append(pass_type(cfg))
 
     passes = sorted(passes, key=lambda p: (p.order, p.name()))
 
     for p in passes:
+        if not p.enabled:
+            continue
+
         __logger__.info("run pass", pass_name=p.name())
         p.run(doc, index)
 

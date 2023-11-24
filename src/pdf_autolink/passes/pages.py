@@ -20,6 +20,9 @@ class Config(BaseModel):
     #: Lower order passes run first.
     order: int = 10
 
+    #: Enable pass.
+    enabled: bool = True
+
     #: Regular expression for a page link.
     #:
     #: Must contain the named capture group `page_number` that refers to the page number.
@@ -66,3 +69,7 @@ class PagesPass(Pass):
     @property
     def order(self) -> int:
         return self.config.order
+
+    @property
+    def enabled(self) -> bool:
+        return self.config.enabled

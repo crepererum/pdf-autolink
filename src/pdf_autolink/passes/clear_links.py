@@ -17,6 +17,9 @@ class Config(BaseModel):
     #: Lower order passes run first.
     order: int = 0
 
+    #: Enable pass.
+    enabled: bool = True
+
 
 class ClearLinksPass(Pass):
     @classmethod
@@ -40,3 +43,7 @@ class ClearLinksPass(Pass):
     @property
     def order(self) -> int:
         return self.config.order
+
+    @property
+    def enabled(self) -> bool:
+        return self.config.enabled

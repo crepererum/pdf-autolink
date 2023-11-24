@@ -31,6 +31,9 @@ class Config(BaseModel):
     #: Lower order passes run first.
     order: int = 10
 
+    #: Enable pass.
+    enabled: bool = True
+
     #: Minimum number of non-unique outgoing links to consider a page as a member of a page table.
     min_links_per_page: int = 10
 
@@ -165,3 +168,7 @@ class PageTablesPass(Pass):
     @property
     def order(self) -> int:
         return self.config.order
+
+    @property
+    def enabled(self) -> bool:
+        return self.config.enabled
