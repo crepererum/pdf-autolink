@@ -12,6 +12,7 @@ from .interface import Pass
 from ..config import JSON_DICT
 from ..index import TextIndex
 from ..link import create_links
+from ..page_ranges import PageRanges
 
 __logger__ = structlog.get_logger()
 
@@ -44,6 +45,9 @@ class Config(BaseModel):
     #:
     #: The regex is applied case-insensitive.
     page_regex: str = r"([a-z()]+\s+)*[a-z()]{2,}\s+(?P<page_number>[0-9]+)"
+
+    #: Pages to ignore.
+    ignore_pages: str | None = None
 
 
 class PageTablesPass(Pass):
@@ -109,6 +113,8 @@ class PageTablesPass(Pass):
             lambda: defaultdict(lambda: [])
         )
 
+        ignore_pages = set(PageRanges(self.config.ignore_pages or ""))
+
         # find potential links
         for match in re.finditer(self.config.page_regex, index.text, re.I):
             # find target page
@@ -124,6 +130,11 @@ class PageTablesPass(Pass):
 
             page = index.positions[idx_start].page
             if page != index.positions[idx_end].page:
+                # spans multiple pages
+                continue
+
+            if page + 1 in ignore_pages:
+                # ignored
                 continue
 
             pages[page][page_number].append((start, end))
