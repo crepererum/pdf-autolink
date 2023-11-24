@@ -25,4 +25,7 @@ jobs:
       - name: Lint
         run: |
           pdm run lint
+      - name: Test
+        run: |
+          pdm run test
 

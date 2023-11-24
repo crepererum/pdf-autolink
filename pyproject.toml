@@ -51,9 +51,11 @@ warn_required_dynamic_aliases = true
 test = [
     "ruff>=0.0.290",
     "mypy>=1.5.1",
+    "pytest>=7.4.3",
 ]
 
 [tool.pdm.scripts]
 fmt = "ruff format ."
 lint = {composite = ["mypy .", "ruff check .", "ruff format --check ."]}
-prepare = {composite = ["fmt", "lint"]}
+prepare = {composite = ["fmt", "lint", "test"]}
+test = {composite = ["pytest"]}
