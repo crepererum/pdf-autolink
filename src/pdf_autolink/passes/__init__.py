@@ -7,6 +7,7 @@ from .chapters import ChaptersPass
 from .clear_links import ClearLinksPass
 from .interface import Pass
 from .pages import PagesPass
+from .page_comments import PageCommentsPass
 from .page_tables import PageTablesPass
 
 from ..config import JSON_DICT
@@ -45,6 +46,7 @@ def _setup_pass_types() -> dict[str, type[Pass]]:
     _add_pass_type(passes, ChaptersPass)
     _add_pass_type(passes, ClearLinksPass)
     _add_pass_type(passes, PagesPass)
+    _add_pass_type(passes, PageCommentsPass)
     _add_pass_type(passes, PageTablesPass)
 
     return passes
