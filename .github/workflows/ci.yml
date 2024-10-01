@@ -16,17 +16,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
-        with:
-          python-version: "3.11"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v2
       - name: Install dependencies
         run: |
-          pdm install
+          uv sync
       - name: Lint
         run: |
-          pdm run lint
+          uv run ./x.py lint
       - name: Test
         run: |
-          pdm run test
+          uv run ./x.py test
 
