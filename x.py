@@ -7,19 +7,19 @@ app = typer.Typer()
 
 @app.command()
 def fmt() -> None:
-    subprocess.run(["ruff", "format", "."])
+    subprocess.run(["ruff", "format", "."], check=True)
 
 
 @app.command()
 def lint() -> None:
-    subprocess.run(["mypy", "."])
-    subprocess.run(["ruff", "check", "."])
-    subprocess.run(["ruff", "format", "--check", "."])
+    subprocess.run(["mypy", "."], check=True)
+    subprocess.run(["ruff", "check", "."], check=True)
+    subprocess.run(["ruff", "format", "--check", "."], check=True)
 
 
 @app.command()
 def test() -> None:
-    subprocess.run(["pytest"])
+    subprocess.run(["pytest"], check=True)
 
 
 @app.command()
