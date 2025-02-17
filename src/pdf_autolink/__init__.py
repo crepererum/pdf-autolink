@@ -14,7 +14,7 @@ from .passes import run_all
 __logger__ = structlog.get_logger()
 
 
-def run(file_in: str, file_out: str, config_file: str = "") -> None:
+def run(file_in: str, file_out: str, config_file: str | None = None) -> None:
     try:
         _run_inner(file_in, file_out, config_file)
     except UserError as e:
@@ -22,7 +22,7 @@ def run(file_in: str, file_out: str, config_file: str = "") -> None:
         raise typer.Exit(code=1)
 
 
-def _run_inner(file_in: str, file_out: str, config_file: str) -> None:
+def _run_inner(file_in: str, file_out: str, config_file: str | None) -> None:
     init_logging()
 
     if file_in == file_out:
