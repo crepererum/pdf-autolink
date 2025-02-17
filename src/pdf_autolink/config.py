@@ -9,9 +9,9 @@ JSON_LIST: TypeAlias = list["JSON"]
 JSON: TypeAlias = JSON_DICT | JSON_LIST | str | int | float | bool | None
 
 
-def load_config(file: str) -> Config:
+def load_config(file: str | None) -> Config:
     cfg = {}
-    if file:
+    if file is not None:
         with open(file, "rb") as fp:
             cfg = tomllib.load(fp)
 

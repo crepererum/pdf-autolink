@@ -25,6 +25,7 @@ def create_links(
             marker_page = pos.page
             marker_rect = pos.page_pos
         else:
+            assert marker_rect is not None
             if (
                 (marker_page != pos.page)
                 or (pos.page_pos.x1 < marker_rect.x0)
